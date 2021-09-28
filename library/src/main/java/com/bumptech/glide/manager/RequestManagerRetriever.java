@@ -124,6 +124,8 @@ public class RequestManagerRetriever implements Handler.Callback {
     if (context == null) {
       throw new IllegalArgumentException("You cannot start a load on a null Context");
     } else if (Util.isOnMainThread() && !(context instanceof Application)) {
+      // 在主线程，且context不是Application类型的
+      // 在满足这个条件下的，都是需要创建一个Fragment ，来关联生命周期的，创建Fragment的过程就不陈述了，都比较简单
       if (context instanceof FragmentActivity) {
         return get((FragmentActivity) context);
       } else if (context instanceof Activity) {
@@ -448,6 +450,7 @@ public class RequestManagerRetriever implements Handler.Callback {
         current = new SupportRequestManagerFragment();
         current.setParentFragmentHint(parentHint);
         pendingSupportRequestManagerFragments.put(fm, current);
+        // 因为这一步耗时，所以加 pendingSupportRequestManagerFragments缓存来解决频繁获取
         fm.beginTransaction().add(current, FRAGMENT_TAG).commitAllowingStateLoss();
         handler.obtainMessage(ID_REMOVE_SUPPORT_FRAGMENT_MANAGER, fm).sendToTarget();
       }

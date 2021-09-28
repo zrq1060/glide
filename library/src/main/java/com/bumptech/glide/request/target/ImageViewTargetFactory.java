@@ -17,6 +17,7 @@ public class ImageViewTargetFactory {
     if (Bitmap.class.equals(clazz)) {
       return (ViewTarget<ImageView, Z>) new BitmapImageViewTarget(view);
     } else if (Drawable.class.isAssignableFrom(clazz)) {
+      // 因为前面调用asDrawable ，所以会创建这个ViewTarget
       return (ViewTarget<ImageView, Z>) new DrawableImageViewTarget(view);
     } else {
       throw new IllegalArgumentException(

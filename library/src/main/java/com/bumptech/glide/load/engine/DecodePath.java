@@ -56,8 +56,11 @@ public class DecodePath<DataType, ResourceType, Transcode> {
       @NonNull Options options,
       DecodeCallback<ResourceType> callback)
       throws GlideException {
+    // 解码
     Resource<ResourceType> decoded = decodeResource(rewinder, width, height, options);
+    // 这个方法是回调到Decodejob.onResourceDecoded ,作用是调用RequestOptions中的Transform处理图片，然后将ResourceCache的Key和Encode准备好（放在变量 deferEncoderManager中），稍后进行写入缓存。
     Resource<ResourceType> transformed = callback.onResourceDecoded(decoded);
+    // 进行数据类型的转换
     return transcoder.transcode(transformed, options);
   }
 
@@ -89,6 +92,7 @@ public class DecodePath<DataType, ResourceType, Transcode> {
         DataType data = rewinder.rewindAndGet();
         if (decoder.handles(data, options)) {
           data = rewinder.rewindAndGet();
+          // 根据DataType和ResourceType的类型分发给不同的解码器Decoder
           result = decoder.decode(data, width, height, options);
         }
         // Some decoders throw unexpectedly. If they do, we shouldn't fail the entire load path, but

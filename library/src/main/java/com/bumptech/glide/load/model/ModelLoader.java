@@ -85,6 +85,7 @@ public interface ModelLoader<Model, Data> {
 
   /**
    * Returns true if the given model is a of a recognized type that this loader can probably load.
+   * 如果给定的模型是可识别的类型，并且该加载器可能可以加载，则返回true。
    *
    * <p>For example, you may want multiple Uri -> InputStream loaders. One might handle media store
    * Uris, another might handle asset Uris, and a third might handle file Uris etc.

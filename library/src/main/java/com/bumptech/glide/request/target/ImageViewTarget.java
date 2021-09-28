@@ -121,6 +121,7 @@ public abstract class ImageViewTarget<Z> extends ViewTarget<ImageView, Z>
   private void setResourceInternal(@Nullable Z resource) {
     // Order matters here. Set the resource first to make sure that the Drawable has a valid and
     // non-null Callback before starting it.
+    // 这是一个抽象函数，执行不同的实现，本例值得是BitmapImageViewTarget
     setResource(resource);
     maybeUpdateAnimatable(resource);
   }

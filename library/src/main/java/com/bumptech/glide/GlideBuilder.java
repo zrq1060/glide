@@ -497,18 +497,22 @@ public final class GlideBuilder {
 
   @NonNull
   Glide build(@NonNull Context context) {
+    // 创建执行器，用于从数据源获取数据，例如网络请求
     if (sourceExecutor == null) {
       sourceExecutor = GlideExecutor.newSourceExecutor();
     }
 
+    // 创建执行器，用于从本地缓存获取数据
     if (diskCacheExecutor == null) {
       diskCacheExecutor = GlideExecutor.newDiskCacheExecutor();
     }
 
+    // 创建执行器，用于执行动画
     if (animationExecutor == null) {
       animationExecutor = GlideExecutor.newAnimationExecutor();
     }
 
+    // 根据当前机器参数计算需要设置的缓存大小
     if (memorySizeCalculator == null) {
       memorySizeCalculator = new MemorySizeCalculator.Builder(context).build();
     }
@@ -517,7 +521,9 @@ public final class GlideBuilder {
       connectivityMonitorFactory = new DefaultConnectivityMonitorFactory();
     }
 
+    // 创建Bitmap池，用于回收LruCache缓存的图片，把图片回收到bitmapPool中，这样下次再创建图片时，可复用该内存，避免连续创建回收内存，造成的内存抖动
     if (bitmapPool == null) {
+      // getBitmapPoolSize，高设备为4*屏宽*屏高
       int size = memorySizeCalculator.getBitmapPoolSize();
       if (size > 0) {
         bitmapPool = new LruBitmapPool(size);
@@ -526,18 +532,24 @@ public final class GlideBuilder {
       }
     }
 
+    // 创建数组池
     if (arrayPool == null) {
+      // getArrayPoolSizeInBytes，高设备4M，低设备2M
       arrayPool = new LruArrayPool(memorySizeCalculator.getArrayPoolSizeInBytes());
     }
 
+    // 创建内存缓存
     if (memoryCache == null) {
+      // getMemoryCacheSize，为8*屏宽*屏高
       memoryCache = new LruResourceCache(memorySizeCalculator.getMemoryCacheSize());
     }
 
+    // 创建磁盘缓存
     if (diskCacheFactory == null) {
       diskCacheFactory = new InternalCacheDiskCacheFactory(context);
     }
 
+    // 创建Engine，真正处理request的类，例如发起网络请求图片，从磁盘读取图片等
     if (engine == null) {
       engine =
           new Engine(
@@ -556,10 +568,12 @@ public final class GlideBuilder {
       defaultRequestListeners = Collections.unmodifiableList(defaultRequestListeners);
     }
 
+    // Glide＃getRetriever()返回的就是RequestManagerRetriever对象
     GlideExperiments experiments = glideExperimentsBuilder.build();
     RequestManagerRetriever requestManagerRetriever =
         new RequestManagerRetriever(requestManagerFactory, experiments);
 
+    // 创建Glide
     return new Glide(
         context,
         engine,

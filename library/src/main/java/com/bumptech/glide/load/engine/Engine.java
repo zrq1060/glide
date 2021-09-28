@@ -174,6 +174,7 @@ public class Engine
       Executor callbackExecutor) {
     long startTime = VERBOSE_IS_LOGGABLE ? LogTime.getLogTime() : 0;
 
+    // 生成缓存key，以后就根据这个key，在缓存中查找
     EngineKey key =
         keyFactory.buildKey(
             model,
@@ -187,9 +188,11 @@ public class Engine
 
     EngineResource<?> memoryResource;
     synchronized (this) {
+      // 检查内存中（弱引用，内存缓存）是否有目标图片
       memoryResource = loadFromMemory(key, isMemoryCacheable, startTime);
 
       if (memoryResource == null) {
+        // 在弱引用和内存缓存中，都没有找到图片，就执行任务。这个任务，会先在磁盘缓存中查找，因为磁盘读取耗时较大，所以放在任务线程中
         return waitForExistingOrStartNewJob(
             glideContext,
             model,
@@ -245,6 +248,7 @@ public class Engine
       EngineKey key,
       long startTime) {
 
+    // 在弱引用和内存缓存中，都没有找到图片，就执行任务。这个任务，会先在磁盘缓存中查找，因为磁盘读取耗时较大，所以放在任务线程中
     EngineJob<?> current = jobs.get(key, onlyRetrieveFromCache);
     if (current != null) {
       current.addCallback(cb, callbackExecutor);
@@ -254,6 +258,7 @@ public class Engine
       return new LoadStatus(cb, current);
     }
 
+    // 创建一个执行工作，它里面有很多Executor，其它线程可以放进来执行
     EngineJob<R> engineJob =
         engineJobFactory.build(
             key,
@@ -262,6 +267,7 @@ public class Engine
             useAnimationPool,
             onlyRetrieveFromCache);
 
+    // 创建一个解码工作，用于处理图片的
     DecodeJob<R> decodeJob =
         decodeJobFactory.build(
             glideContext,
@@ -281,9 +287,12 @@ public class Engine
             options,
             engineJob);
 
+    // 放在Jobs内部维护的HashMap中
     jobs.put(key, engineJob);
 
+    // 注册ResourceCallback接口，就是在成功获取图片后，需要显示到ImageView 上的回调，这个接口回调到SingleRequest 中
     engineJob.addCallback(cb, callbackExecutor);
+    // 开始执行
     engineJob.start(decodeJob);
 
     if (VERBOSE_IS_LOGGABLE) {
@@ -299,16 +308,20 @@ public class Engine
       return null;
     }
 
+    // 检查弱引用缓存是否有目标图片
     EngineResource<?> active = loadFromActiveResources(key);
     if (active != null) {
+      // 在弱引用缓存中找到图片，直接返回
       if (VERBOSE_IS_LOGGABLE) {
         logWithTimeAndKey("Loaded resource from active resources", startTime, key);
       }
       return active;
     }
 
+    // 检查内存的缓存 是否有目标图片
     EngineResource<?> cached = loadFromCache(key);
     if (cached != null) {
+      // 在内存缓存中找到图片，直接返回
       if (VERBOSE_IS_LOGGABLE) {
         logWithTimeAndKey("Loaded resource from cache", startTime, key);
       }

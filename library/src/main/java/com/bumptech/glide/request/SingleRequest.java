@@ -225,6 +225,7 @@ public final class SingleRequest<R> implements Request, SizeReadyCallback, Resou
         // Only log at more verbose log levels if the user has set a fallback drawable, because
         // fallback Drawables indicate the user expects null models occasionally.
         int logLevel = getFallbackDrawable() == null ? Log.WARN : Log.DEBUG;
+        // model（url）为空，回调加载失败
         onLoadFailed(new GlideException("Received null model"), logLevel);
         return;
       }
@@ -240,6 +241,7 @@ public final class SingleRequest<R> implements Request, SizeReadyCallback, Resou
       // that the view size has changed will need to explicitly clear the View or Target before
       // starting the new load.
       if (status == Status.COMPLETE) {
+        // 把数据显示到ImageView 上
         onResourceReady(
             resource, DataSource.MEMORY_CACHE, /* isLoadedFromAlternateCacheKey= */ false);
         return;
@@ -250,14 +252,19 @@ public final class SingleRequest<R> implements Request, SizeReadyCallback, Resou
 
       cookie = GlideTrace.beginSectionAsync(TAG);
       status = Status.WAITING_FOR_SIZE;
+      // glide 会根据显示图片的宽高进行缓存，所以这里需要获得View的宽高，overrideWidth，overrideHeight默认为-1
+      // 所以第一次会到else分支，获取View的宽高
       if (Util.isValidDimensions(overrideWidth, overrideHeight)) {
+        // 当使用override() API为图片指定了一个固定的宽高时直接执行onSizeReady，最终的核心处理位于onSizeReady
         onSizeReady(overrideWidth, overrideHeight);
       } else {
+        // 根据imageView的宽高算出图片的宽高，最终也会走到onSizeReady
         target.getSize(this);
       }
 
       if ((status == Status.RUNNING || status == Status.WAITING_FOR_SIZE)
           && canNotifyStatusChanged()) {
+        // 预先加载设置的缩略图
         target.onLoadStarted(getPlaceholderDrawable());
       }
       if (IS_VERBOSE_LOGGABLE) {
@@ -442,8 +449,10 @@ public final class SingleRequest<R> implements Request, SizeReadyCallback, Resou
       if (status != Status.WAITING_FOR_SIZE) {
         return;
       }
+      // 设置状态为正在请求
       status = Status.RUNNING;
 
+      // 设置宽高
       float sizeMultiplier = requestOptions.getSizeMultiplier();
       this.width = maybeApplySizeMultiplier(width, sizeMultiplier);
       this.height = maybeApplySizeMultiplier(height, sizeMultiplier);
@@ -451,6 +460,7 @@ public final class SingleRequest<R> implements Request, SizeReadyCallback, Resou
       if (IS_VERBOSE_LOGGABLE) {
         logV("finished setup for calling load in " + LogTime.getElapsedMillis(startTime));
       }
+      // 这里的engine 是在创建Glide的时候，build() 创建的，engine封装了各种Executor，内存缓存等
       loadStatus =
           engine.load(
               glideContext,
@@ -641,6 +651,7 @@ public final class SingleRequest<R> implements Request, SizeReadyCallback, Resou
 
       if (!anyListenerHandledUpdatingTarget) {
         Transition<? super R> animation = animationFactory.build(dataSource, isFirstResource);
+        // target 函数是在 第3步 buildTarget 时，创建的  ，在第4步的 buildRequest 把target 传递进Request 中
         target.onResourceReady(result, animation);
       }
     } finally {

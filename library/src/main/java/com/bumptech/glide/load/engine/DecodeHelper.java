@@ -209,10 +209,13 @@ final class DecodeHelper<Transcode> {
     if (!isLoadDataSet) {
       isLoadDataSet = true;
       loadData.clear();
+      // 获取已注册的加载器中所有可以加载当前模型的加载器
       List<ModelLoader<Object, ?>> modelLoaders = glideContext.getRegistry().getModelLoaders(model);
       //noinspection ForLoopReplaceableByForEach to improve perf
       for (int i = 0, size = modelLoaders.size(); i < size; i++) {
         ModelLoader<Object, ?> modelLoader = modelLoaders.get(i);
+        // 每一个ModeLoader 都有一个内部类LoadData，通过函数buildLoadData 来创建
+        // 这里的modelLoader 有一个类型是StringLoader，StringLoader.buildLoadData->MultiModelLoader.buildLoadData
         LoadData<?> current = modelLoader.buildLoadData(model, width, height, options);
         if (current != null) {
           loadData.add(current);

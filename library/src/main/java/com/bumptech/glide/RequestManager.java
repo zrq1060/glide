@@ -421,7 +421,9 @@ public class RequestManager
    */
   @NonNull
   @CheckResult
+  // 如果是其它的类型，就使用其它的asXXXX函数（例如asGif）
   public RequestBuilder<Drawable> asDrawable() {
+    // 这里传入Drawable.class
     return as(Drawable.class);
   }
 
@@ -591,6 +593,7 @@ public class RequestManager
   @CheckResult
   public <ResourceType> RequestBuilder<ResourceType> as(
       @NonNull Class<ResourceType> resourceClass) {
+    // 创建RequestBuilder
     return new RequestBuilder<>(glide, this, resourceClass, context);
   }
 
@@ -667,7 +670,9 @@ public class RequestManager
   }
 
   synchronized void track(@NonNull Target<?> target, @NonNull Request request) {
+    // 把填充目标（这里是ImageView）加入跟踪器里，如果activity生命周期发生变化，就会执行填充目标相应的生命周期
     targetTracker.track(target);
+    // 执行Request
     requestTracker.runRequest(request);
   }
 

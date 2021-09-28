@@ -82,6 +82,7 @@ public class ModelLoaderRegistry {
     //noinspection ForLoopReplaceableByForEach to improve perf
     for (int i = 0; i < size; i++) {
       ModelLoader<A, ?> loader = modelLoaders.get(i);
+      // 通过 ModelLoader#handles 方法判断加载器是否可以处理当前类型的数据（这个数据时通过load 传递进来的），返回所有可以处理的加载器
       if (loader.handles(model)) {
         if (isEmpty) {
           filteredLoaders = new ArrayList<>(size - i);

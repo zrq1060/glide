@@ -44,11 +44,15 @@ class MultiModelLoader<Model, Data> implements ModelLoader<Model, Data> {
     List<DataFetcher<Data>> fetchers = new ArrayList<>(size);
     //noinspection ForLoopReplaceableByForEach to improve perf
     for (int i = 0; i < size; i++) {
+      // 这里的modelLoaders，是在创建MultiModelLoader的时候赋值的
       ModelLoader<Model, Data> modelLoader = modelLoaders.get(i);
+      // 在这里有进行了一次过滤，在更小的范围内查找，可以处理model的ModelLoader。（这次是在StringLoader 中查找，可以处理URL的ModelLoader）
       if (modelLoader.handles(model)) {
         LoadData<Data> loadData = modelLoader.buildLoadData(model, width, height, options);
         if (loadData != null) {
+          // 这里把LoadData的值提取出来，
           sourceKey = loadData.sourceKey;
+          // 以本例子，这里的fetcher 是HttpUrlFetcher
           fetchers.add(loadData.fetcher);
         }
       }

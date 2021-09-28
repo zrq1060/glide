@@ -56,6 +56,7 @@ public class HttpUrlFetcher implements DataFetcher<InputStream> {
     long startTime = LogTime.getLogTime();
     try {
       InputStream result = loadDataWithRedirects(glideUrl.toURL(), 0, null, glideUrl.getHeaders());
+      // 获取数据成功后，这里进行了回调
       callback.onDataReady(result);
     } catch (IOException e) {
       if (Log.isLoggable(TAG, Log.DEBUG)) {
@@ -104,6 +105,7 @@ public class HttpUrlFetcher implements DataFetcher<InputStream> {
 
     final int statusCode = getHttpStatusCodeOrInvalid(urlConnection);
     if (isHttpOk(statusCode)) {
+      // 如果请求成功，返回数据流
       return getStreamForSuccessfulRequest(urlConnection);
     } else if (isHttpRedirect(statusCode)) {
       String redirectUrlString = urlConnection.getHeaderField(REDIRECT_HEADER_FIELD);
@@ -119,6 +121,7 @@ public class HttpUrlFetcher implements DataFetcher<InputStream> {
       // Closing the stream specifically is required to avoid leaking ResponseBodys in addition
       // to disconnecting the url connection below. See #2352.
       cleanup();
+      // 如果需要重定向，递归调用该函数...
       return loadDataWithRedirects(redirectUrl, redirects + 1, url, headers);
     } else if (statusCode == INVALID_STATUS_CODE) {
       throw new HttpException(statusCode);
@@ -146,6 +149,7 @@ public class HttpUrlFetcher implements DataFetcher<InputStream> {
       throws HttpException {
     HttpURLConnection urlConnection;
     try {
+      // 通过HttpURLConnection网络请求数据
       urlConnection = connectionFactory.build(url);
     } catch (IOException e) {
       throw new HttpException("URL.openConnection threw", /*statusCode=*/ 0, e);

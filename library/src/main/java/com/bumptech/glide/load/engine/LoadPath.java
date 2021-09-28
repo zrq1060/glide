@@ -73,6 +73,7 @@ public class LoadPath<Data, ResourceType, Transcode> {
     for (int i = 0, size = decodePaths.size(); i < size; i++) {
       DecodePath<Data, ResourceType, Transcode> path = decodePaths.get(i);
       try {
+        // 重点在这里，调用LoadPath 的decode 解码
         result = path.decode(rewinder, width, height, options, decodeCallback);
       } catch (GlideException e) {
         exceptions.add(e);
